@@ -1,7 +1,7 @@
 {
-  "name": "claude-autopilot",
-  "displayName": "Claude Autopilot",
-  "description": "Automated Claude Code task management with queue processing and auto-resume functionality",
+  "name": "opencode-autopilot",
+  "displayName": "OpenCode Autopilot",
+  "description": "Automated OpenCode task management with queue processing and auto-resume functionality",
   "version": "0.1.6",
   "icon": "icon.png",
   "engines": {
@@ -19,33 +19,33 @@
     "commands": [
       {
         "command": "claude-autopilot.start",
-        "title": "Start Claude Autopilot",
-        "category": "Claude"
+        "title": "Start OpenCode Autopilot",
+        "category": "OpenCode"
       },
       {
         "command": "claude-autopilot.stop",
-        "title": "Stop Claude Autopilot",
-        "category": "Claude"
+        "title": "Stop OpenCode Autopilot",
+        "category": "OpenCode"
       },
       {
         "command": "claude-autopilot.addMessage",
         "title": "Add Message to Queue",
-        "category": "Claude"
+        "category": "OpenCode"
       },
       {
         "command": "claude-autopilot.startWebInterface",
         "title": "Start Web Interface",
-        "category": "Claude"
+        "category": "OpenCode"
       },
       {
         "command": "claude-autopilot.stopWebInterface",
         "title": "Stop Web Interface",
-        "category": "Claude"
+        "category": "OpenCode"
       },
       {
         "command": "claude-autopilot.showWebInterfaceQR",
         "title": "Show Web Interface QR Code",
-        "category": "Claude"
+        "category": "OpenCode"
       }
     ],
     "menus": {
@@ -77,7 +77,7 @@
       ]
     },
     "configuration": {
-      "title": "Claude Autopilot",
+      "title": "OpenCode Autopilot",
       "properties": {
         "claudeAutopilot.queue.maxSize": {
           "type": "number",
@@ -115,7 +115,7 @@
         "claudeAutopilot.session.skipPermissions": {
           "type": "boolean",
           "default": true,
-          "description": "Skip Claude CLI permission prompts (use --dangerously-skip-permissions)"
+          "description": "Skip OpenCode CLI permission prompts (use --dangerously-skip-permissions)"
         },
         "claudeAutopilot.session.scheduledStartTime": {
           "type": "string",
@@ -164,12 +164,12 @@
         "claudeAutopilot.security.allowDangerousXssbypass": {
           "type": "boolean",
           "default": false,
-          "description": "⚠️ DANGER: Allow bypassing XSS protection in webview content. Only enable if you trust all message content and understand the security risks."
+          "description": "⚠️ WARNING: Allow bypassing XSS protection in webview content. Only enable if you trust all message content."
         },
         "claudeAutopilot.webInterface.useExternalServer": {
           "type": "boolean",
           "default": false,
-          "description": "Use external server (ngrok) for web interface. If disabled, uses local network only. Requires global ngrok installation: 'npm install -g ngrok' and auth setup: 'ngrok config add-authtoken <token>'."
+          "description": "Use external server (ngrok) for web interface. If disabled, uses local network only. Requires ngrok installation and auth setup."
         },
         "claudeAutopilot.webInterface.password": {
           "type": "string",
@@ -207,29 +207,28 @@
     "typescript": "^4.9.4"
   },
   "keywords": [
-    "claude",
-    "claude-code",
+    "opencode",
     "ai",
     "automation",
     "queue",
     "task-management",
     "productivity",
     "development",
-    "anthropic",
+    "terminal",
     "machine-learning",
     "batch-processing",
     "workflow"
   ],
-  "author": "Ben Basha",
+  "author": "tarushvkodes",
   "license": "MIT",
-  "publisher": "benbasha",
+  "publisher": "tarushvkodes",
   "repository": {
     "type": "git",
-    "url": "https://github.com/benbasha/Claude-Autopilot"
+    "url": "https://github.com/tarushvkodes/OpenCode-Autopilot"
   },
-  "homepage": "https://github.com/benbasha/Claude-Autopilot#readme",
+  "homepage": "https://github.com/tarushvkodes/OpenCode-Autopilot#readme",
   "bugs": {
-    "url": "https://github.com/benbasha/Claude-Autopilot/discussions"
+    "url": "https://github.com/tarushvkodes/OpenCode-Autopilot/issues"
   },
   "galleryBanner": {
     "color": "#1e1e1e",

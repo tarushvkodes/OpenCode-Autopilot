@@ -55,13 +55,13 @@ export function showDependencyStatus(results: DependencyCheckResults): void {
 export function showInstallationInstructions(results: DependencyCheckResults): void {
     const { claude, python, wrapper, ngrok } = results;
     
-    let instructions = '# Claude Autopilot - Dependency Installation Guide\n\n';
+    let instructions = '# OpenCode Autopilot - Dependency Installation Guide\n\n';
     
     // Show status for each dependency
     if (claude.available) {
-        instructions += `${DebugEmojis.SUCCESS} Claude Code: ${claude.version}\n\n`;
+        instructions += `${DebugEmojis.SUCCESS} OpenCode CLI: ${claude.version}\n\n`;
     } else {
-        instructions += `${DebugEmojis.ERROR} Claude Code: Missing\n`;
+        instructions += `${DebugEmojis.ERROR} OpenCode CLI: Missing\n`;
         instructions += claude.installInstructions + '\n\n';
     }
     
@@ -114,7 +114,7 @@ function analyzeDependencyStatus(results: DependencyCheckResults): DependencySta
     let allCriticalReady = true;
     
     if (!claude.available) {
-        issues.push(`${DebugEmojis.ERROR} Claude Code: ${claude.error}`);
+        issues.push(`${DebugEmojis.ERROR} OpenCode CLI: ${claude.error}`);
         allCriticalReady = false;
     }
     
@@ -135,7 +135,7 @@ function analyzeDependencyStatus(results: DependencyCheckResults): DependencySta
     
     if (allCriticalReady) {
         successMessages.push(
-            `${DebugEmojis.SUCCESS} All dependencies ready! Claude: ${claude.version}, Python: ${python.version}, ngrok: ${ngrok.version || 'not available'}`
+            `${DebugEmojis.SUCCESS} All dependencies ready! OpenCode: ${claude.version}, Python: ${python.version}, ngrok: ${ngrok.version || 'not available'}`
         );
     }
     
