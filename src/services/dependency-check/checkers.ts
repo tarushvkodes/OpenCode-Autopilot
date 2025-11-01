@@ -11,14 +11,14 @@ import { wrapCommandForWSL } from '../../utils/wsl-helper';
 export async function checkClaudeInstallation(): Promise<DependencyCheckResult> {
     // For Windows, try PowerShell first as a fallback method
     if (process.platform === 'win32') {
-        return await checkClaudeInstallationWindows();
+        return await checkOpenCodeInstallationWindows();
     }
     
     // For non-Windows platforms, use the original method
-    return await checkClaudeInstallationGeneric();
+    return await checkOpenCodeInstallationGeneric();
 }
 
-async function checkClaudeInstallationWindows(): Promise<DependencyCheckResult> {
+async function checkOpenCodeInstallationWindows(): Promise<DependencyCheckResult> {
     // On Windows, we must use WSL because PTY functionality requires Unix-like system calls
     // Check if WSL is available first
     try {
@@ -31,12 +31,12 @@ async function checkClaudeInstallationWindows(): Promise<DependencyCheckResult> 
         if (wslError || wslStatus !== 0) {
             return {
                 available: false,
-                error: 'WSL is required for Claude Autopilot on Windows but is not available or not properly configured',
+                error: 'WSL is required for OpenCode Autopilot on Windows but is not available or not properly configured',
                 installInstructions: `WSL Installation Required:
 1. Install WSL: wsl --install
 2. Restart your computer
-3. Install Claude CLI inside WSL
-4. Verify: wsl claude --version
+3. Install OpenCode CLI inside WSL
+4. Verify: wsl opencode --version
 
 WSL is required because the extension uses PTY functionality that requires Unix-like system calls.`
             };
@@ -44,20 +44,20 @@ WSL is required because the extension uses PTY functionality that requires Unix-
     } catch (error) {
         return {
             available: false,
-            error: 'WSL is required for Claude Autopilot on Windows but is not available',
+            error: 'WSL is required for OpenCode Autopilot on Windows but is not available',
             installInstructions: `WSL Installation Required:
 1. Install WSL: wsl --install
 2. Restart your computer
-3. Install Claude CLI inside WSL
-4. Verify: wsl claude --version
+3. Install OpenCode CLI inside WSL
+4. Verify: wsl opencode --version
 
 WSL is required because the extension uses PTY functionality that requires Unix-like system calls.`
         };
     }
     
-    // Now check if Claude is available in WSL
+    // Now check if OpenCode is available in WSL
     try {
-        const { error, status, stdout, stderr } = spawnSync('wsl', ['claude', '--version'], {
+        const { error, status, stdout, stderr } = spawnSync('wsl', ['opencode', '--version'], {
             stdio: 'pipe',
             encoding: 'utf8',
             timeout: 5000
@@ -66,8 +66,8 @@ WSL is required because the extension uses PTY functionality that requires Unix-
         if (error) {
             return {
                 available: false,
-                error: `WSL is available but Claude CLI is not installed in WSL: ${error.message}`,
-                installInstructions: getClaudeInstallInstructions()
+                error: `WSL is available but OpenCode CLI is not installed in WSL: ${error.message}`,
+                installInstructions: getOpenCodeInstallInstructions()
             };
         }
 
@@ -75,27 +75,27 @@ WSL is required because the extension uses PTY functionality that requires Unix-
             return {
                 available: true,
                 version: stdout.trim(),
-                path: 'claude (via WSL)'
+                path: 'opencode (via WSL)'
             };
         } else {
             return {
                 available: false,
-                error: `Claude CLI not found in WSL: ${stderr?.trim() || 'returned empty version'}`,
-                installInstructions: getClaudeInstallInstructions()
+                error: `OpenCode CLI not found in WSL: ${stderr?.trim() || 'returned empty version'}`,
+                installInstructions: getOpenCodeInstallInstructions()
             };
         }
     } catch (error) {
         return {
             available: false,
-            error: `Failed to run claude command in WSL: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            installInstructions: getClaudeInstallInstructions()
+            error: `Failed to run opencode command in WSL: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            installInstructions: getOpenCodeInstallInstructions()
         };
     }
 }
 
-async function checkClaudeInstallationGeneric(): Promise<DependencyCheckResult> {
+async function checkOpenCodeInstallationGeneric(): Promise<DependencyCheckResult> {
     try {
-        const { error, status, stdout, stderr } = spawnSync('claude', ['--version'], {
+        const { error, status, stdout, stderr } = spawnSync('opencode', ['--version'], {
             stdio: 'pipe',
             encoding: 'utf8',
             timeout: 5000
@@ -104,8 +104,8 @@ async function checkClaudeInstallationGeneric(): Promise<DependencyCheckResult> 
         if (error) {
             return {
                 available: false,
-                error: `Failed to run claude command: ${error.message}`,
-                installInstructions: getClaudeInstallInstructions()
+                error: `Failed to run opencode command: ${error.message}`,
+                installInstructions: getOpenCodeInstallInstructions()
             };
         }
 
@@ -113,20 +113,20 @@ async function checkClaudeInstallationGeneric(): Promise<DependencyCheckResult> 
             return {
                 available: true,
                 version: stdout.trim(),
-                path: 'claude'
+                path: 'opencode'
             };
         } else {
             return {
                 available: false,
-                error: stderr?.trim() || 'Claude CLI not found or returned empty version',
-                installInstructions: getClaudeInstallInstructions()
+                error: stderr?.trim() || 'OpenCode CLI not found or returned empty version',
+                installInstructions: getOpenCodeInstallInstructions()
             };
         }
     } catch (error) {
         return {
             available: false,
-            error: `Failed to run claude command: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            installInstructions: getClaudeInstallInstructions()
+            error: `Failed to run opencode command: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            installInstructions: getOpenCodeInstallInstructions()
         };
     }
 }
@@ -304,51 +304,50 @@ async function checkCommand(command: string, args: string[]): Promise<Dependency
     }
 }
 
-function getClaudeInstallInstructions(): string {
+function getOpenCodeInstallInstructions(): string {
     const platform = os.platform();
     
     switch (platform) {
         case 'darwin': // macOS
-            return `Claude CLI Installation (macOS):
-1. Install via Homebrew: brew install claude-cli
-2. Or download from: https://docs.anthropic.com/en/docs/claude-code/setup
+            return `OpenCode CLI Installation (macOS):
+1. Install via npm: npm install -g @opencode/cli
+2. Or visit: https://opencode.ai
 3. After installation, restart VS Code
-4. Verify installation: claude --version`;
+4. Verify installation: opencode --version`;
             
         case 'win32': // Windows
-            return `Claude CLI Installation (Windows - WSL Required):
-IMPORTANT: WSL is required for Claude Autopilot on Windows because it uses PTY functionality that requires Unix-like system calls.
+            return `OpenCode CLI Installation (Windows - WSL Required):
+IMPORTANT: WSL is required for OpenCode Autopilot on Windows because it uses PTY functionality that requires Unix-like system calls.
 
 1. Install WSL (if not already installed):
    - Run: wsl --install
    - Restart your computer
 
-2. Install Claude CLI inside WSL:
+2. Install OpenCode CLI inside WSL:
    - Open WSL terminal (Ubuntu/your preferred distro)
-   - Install Claude CLI following Linux instructions
-   - Verify: claude --version (inside WSL)
-   - Run claude and set up your API key/Subscription token
+   - Install: npm install -g @opencode/cli
+   - Verify: opencode --version (inside WSL)
+   - Run opencode and set up your API key if needed
 
 3. Verify from Windows:
-   - Test: wsl claude --version
+   - Test: wsl opencode --version
 
-The extension will automatically use WSL to run Claude on Windows.`;
+The extension will automatically use WSL to run OpenCode on Windows.`;
             
         case 'linux': // Linux
-            return `Claude CLI Installation (Linux):
-1. Download from: https://docs.anthropic.com/en/docs/claude-code/setup
-2. Make executable: chmod +x claude
-3. Move to PATH: sudo mv claude /usr/local/bin/
-4. Restart VS Code
-5. Verify installation: claude --version`;
+            return `OpenCode CLI Installation (Linux):
+1. Install via npm: npm install -g @opencode/cli
+2. Or visit: https://opencode.ai
+3. Restart VS Code
+4. Verify installation: opencode --version`;
             
         default:
-            return `Claude CLI Installation:
-1. Visit: https://docs.anthropic.com/en/docs/claude-code/setup
-2. Download for your platform
+            return `OpenCode CLI Installation:
+1. Visit: https://opencode.ai
+2. Install via npm: npm install -g @opencode/cli
 3. Follow platform-specific installation instructions
 4. Restart VS Code
-5. Verify installation: claude --version`;
+5. Verify installation: opencode --version`;
     }
 }
 

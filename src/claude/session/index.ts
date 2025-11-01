@@ -18,12 +18,12 @@ import { startSleepPrevention, stopSleepPrevention } from '../../services/sleep'
 import { runDependencyCheck, showDependencyStatus } from '../../services/dependency-check';
 
 export async function startClaudeSession(skipPermissions: boolean = true): Promise<void> {
-    debugLog('=== STARTING CLAUDE SESSION ===');
+    debugLog('=== STARTING OPENCODE SESSION ===');
     
     try {
         if (claudeProcess) {
             showInfo(Messages.SESSION_ALREADY_RUNNING);
-            debugLog('Claude session already running - aborting');
+            debugLog('OpenCode session already running - aborting');
             return;
         }
 
@@ -44,7 +44,7 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
                         dependencyResults.wrapper.available;
         
         debugLog(`🔍 Dependency check results:
-  Claude CLI: ${dependencyResults.claude.available ? '✅' : '❌'} ${dependencyResults.claude.available ? dependencyResults.claude.version : dependencyResults.claude.error}
+  OpenCode CLI: ${dependencyResults.claude.available ? '✅' : '❌'} ${dependencyResults.claude.available ? dependencyResults.claude.version : dependencyResults.claude.error}
   Python: ${dependencyResults.python.available ? '✅' : '❌'} ${dependencyResults.python.available ? dependencyResults.python.version : dependencyResults.python.error}
   PTY Wrapper: ${dependencyResults.wrapper.available ? '✅' : '❌'} ${dependencyResults.wrapper.available ? dependencyResults.wrapper.version : dependencyResults.wrapper.error}`);
         
@@ -61,7 +61,7 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         const cwd = workspaceFolder?.uri.fsPath || process.cwd();
         
         debugLog(`Working directory: ${cwd}`);
-        debugLog('Spawning Claude process...');
+        debugLog('Spawning OpenCode process...');
         
         // Use the detected Python path
         const pythonPath = dependencyResults.python.path || 'python3';
@@ -69,7 +69,7 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         // Verify wrapper file exists
         const wrapperPath = dependencyResults.wrapper.path;
         if (!wrapperPath) {
-            const errorMsg = 'Claude PTY wrapper not found. Please reinstall the extension.';
+            const errorMsg = 'OpenCode PTY wrapper not found. Please reinstall the extension.';
             showError(errorMsg);
             debugLog('❌ PTY wrapper file not found');
             throw new Error(errorMsg);
@@ -150,7 +150,7 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         }
 
     setClaudeProcess(spawnedProcess);
-    debugLog(`✓ Claude process started successfully`);
+    debugLog(`✓ OpenCode process started successfully`);
     debugLog(`Process PID: ${spawnedProcess.pid}`);
     
     spawnedProcess.stdout?.on('data', (data: Buffer) => {
@@ -158,7 +158,7 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         
         sendClaudeOutput(output);
         
-        if (output.includes('Claude usage limit reached') || output.includes('usage limit reached')) {
+        if (output.includes('usage limit reached') || output.includes('rate limit')) {
             debugLog('⚠️ POTENTIAL USAGE LIMIT DETECTED');
             debugLog(`📋 Usage limit output: ${output}`);
             if (currentMessage && isCurrentUsageLimit(output)) {
@@ -170,21 +170,22 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
             return;
         }
         
-        const claudeAuthErrors = [
-            'Claude CLI authentication failed',
-            'Please authenticate with Claude'
+        const authErrors = [
+            'authentication failed',
+            'Please authenticate',
+            'API key'
         ];
-        const isAuthError = claudeAuthErrors.some(authError => output.includes(authError));
+        const isAuthError = authErrors.some(authError => output.toLowerCase().includes(authError.toLowerCase()));
         
         if (isAuthError) {
             debugLog('🔐 AUTHENTICATION ERROR detected');
             setSessionReady(false);
             if (currentMessage) {
                 currentMessage.status = 'error';
-                currentMessage.error = 'Claude CLI authentication failed';
+                currentMessage.error = 'CLI authentication failed';
                 updateWebviewContent();
             }
-            vscode.window.showErrorMessage('Claude CLI authentication failed');
+            vscode.window.showErrorMessage('OpenCode CLI authentication failed');
             return;
         }
         
@@ -253,13 +254,13 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         const wasProcessing = processingQueue;
         setProcessingQueue(false);
         
-        const closeMessage = formatTerminalOutput(`Claude process closed with code: ${code}`, 'info');
+        const closeMessage = formatTerminalOutput(`OpenCode process closed with code: ${code}`, 'info');
         sendToWebviewTerminal(closeMessage);
         
         if (currentMessage && currentMessage.status === 'processing') {
             debugLog(`❌ Current message #${currentMessage.id} marked as error due to process closure`);
             currentMessage.status = 'error';
-            currentMessage.error = `Claude process closed unexpectedly (code: ${code})`;
+            currentMessage.error = `OpenCode process closed unexpectedly (code: ${code})`;
             setCurrentMessage(null);
         }
         
@@ -269,11 +270,11 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         updateSessionState();
         
         if (wasProcessing) {
-            vscode.window.showWarningMessage('Claude process closed unexpectedly while processing. You can restart the session.');
+            vscode.window.showWarningMessage('OpenCode process closed unexpectedly while processing. You can restart the session.');
         } else {
-            vscode.window.showInformationMessage('Claude session ended');
+            vscode.window.showInformationMessage('OpenCode session ended');
         }
-        debugLog('=== CLAUDE SESSION ENDED ===');
+        debugLog('=== OPENCODE SESSION ENDED ===');
     });
 
     spawnedProcess.on('error', (error: Error) => {
@@ -288,13 +289,13 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         const wasProcessing = processingQueue;
         setProcessingQueue(false);
         
-        const errorMessage = formatTerminalOutput(`Claude process error: ${error.message}`, 'error');
+        const errorMessage = formatTerminalOutput(`OpenCode process error: ${error.message}`, 'error');
         sendToWebviewTerminal(errorMessage);
         
         if (currentMessage && currentMessage.status === 'processing') {
             debugLog(`❌ Current message #${currentMessage.id} marked as error due to process error`);
             currentMessage.status = 'error';
-            currentMessage.error = `Claude process error: ${error.message}`;
+            currentMessage.error = `OpenCode process error: ${error.message}`;
             setCurrentMessage(null);
         }
         
@@ -304,17 +305,17 @@ export async function startClaudeSession(skipPermissions: boolean = true): Promi
         updateSessionState();
         
         if (wasProcessing) {
-            vscode.window.showErrorMessage(`Claude process error while processing: ${error.message}`);
+            vscode.window.showErrorMessage(`OpenCode process error while processing: ${error.message}`);
         } else {
-            vscode.window.showErrorMessage(`Claude process error: ${error.message}`);
+            vscode.window.showErrorMessage(`OpenCode process error: ${error.message}`);
         }
-        debugLog('=== CLAUDE SESSION ENDED WITH ERROR ===');
+        debugLog('=== OPENCODE SESSION ENDED WITH ERROR ===');
     });
 
     } catch (error) {
         // Global catch block for any unexpected errors during session startup
-        const errorMsg = `Failed to start Claude session: ${getErrorMessage(error)}`;
-        debugLog(formatDebugMessage(DebugEmojis.ERROR, `Claude session startup failed: ${error}`));
+        const errorMsg = `Failed to start OpenCode session: ${getErrorMessage(error)}`;
+        debugLog(formatDebugMessage(DebugEmojis.ERROR, `OpenCode session startup failed: ${error}`));
         vscode.window.showErrorMessage(errorMsg);
         
         // Clean up any partial state
@@ -349,13 +350,13 @@ export function resetClaudeSession(): void {
     
     updateWebviewContent();
     updateSessionState();
-    vscode.window.showInformationMessage('Claude session reset. You can now start a new session.');
+    vscode.window.showInformationMessage('OpenCode session reset. You can now start a new session.');
 }
 
 export function handleClaudeKeypress(key: string): void {
     if (!claudeProcess || !claudeProcess.stdin) {
-        debugLog(`❌ Cannot send keypress: Claude process not available`);
-        vscode.window.showWarningMessage('Claude process not available for keypress input');
+        debugLog(`❌ Cannot send keypress: OpenCode process not available`);
+        vscode.window.showWarningMessage('OpenCode process not available for keypress input');
         return;
     }
 
